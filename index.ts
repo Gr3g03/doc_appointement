@@ -50,7 +50,7 @@ async function getUserFromToken(token: string) {
 
 }
 
-app.post('/sign-up', async (req, res) => {
+app.post('/register', async (req, res) => {
 
   const { email, password, userName, firstName, lastName, address, bio, phone, avatar, isDoctor } = req.body;
 
@@ -59,12 +59,15 @@ app.post('/sign-up', async (req, res) => {
     const hash = bcrypt.hashSync(password);
 
     const user = await prisma.user.create({
+
+      //@ts-ignore
       data: {
         email: email,
         password: hash,
         userName: userName,
         firstName: firstName,
         lastName: lastName,
+        //@ts-ignore
         address: address,
         bio: bio,
         phone: phone,
@@ -102,6 +105,7 @@ app.post('/login', async (req, res) => {
   if (user && passwordMatches) {
     res.send({ user, token: createToken(user.id) });
   }
+
   else {
     res.status(404).send({ error: "user or password incorrect" });
   }
@@ -124,8 +128,6 @@ app.get('/validate', async (req, res) => {
   }
 
 });
-
-
 
 
 app.get('/users', async (req, res) => {
@@ -295,7 +297,6 @@ app.get("/categories/:id", async (req, res) => {
   }
 
 });
-// #endregion
 
 app.get('/appointements', async (req, res) => {
 
