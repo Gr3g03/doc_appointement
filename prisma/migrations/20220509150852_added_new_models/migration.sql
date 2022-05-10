@@ -1,17 +1,9 @@
--- CreateTable
-CREATE TABLE "User" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "username" TEXT NOT NULL,
-    "full_name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "avatar" TEXT NOT NULL,
-    "phone" INTEGER NOT NULL,
-    "address" TEXT NOT NULL,
-    "bio" TEXT NOT NULL,
-    "isDoctor" BOOLEAN NOT NULL
-);
+/*
+  Warnings:
 
+  - You are about to drop the column `isAdmin` on the `User` table. All the data in the column will be lost.
+
+*/
 -- CreateTable
 CREATE TABLE "Category" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -38,12 +30,31 @@ CREATE TABLE "Appointement" (
 -- CreateTable
 CREATE TABLE "Bids" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "project_id" INTEGER NOT NULL,
-    "bids" INTEGER NOT NULL,
+    "appointment_id" INTEGER NOT NULL,
     "user_id" INTEGER NOT NULL,
     CONSTRAINT "Bids_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Bids_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "Appointement" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Bids_appointment_id_fkey" FOREIGN KEY ("appointment_id") REFERENCES "Appointement" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- CreateIndex
+-- RedefineTables
+PRAGMA foreign_keys=OFF;
+CREATE TABLE "new_User" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "userName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL DEFAULT '',
+    "firstName" TEXT NOT NULL DEFAULT '',
+    "lastName" TEXT NOT NULL DEFAULT '',
+    "address" TEXT NOT NULL DEFAULT '',
+    "bio" TEXT NOT NULL DEFAULT '',
+    "phone" TEXT NOT NULL DEFAULT '',
+    "avatar" TEXT NOT NULL DEFAULT '',
+    "isDoctor" BOOLEAN NOT NULL DEFAULT false
+);
+INSERT INTO "new_User" ("email", "firstName", "id", "lastName", "password", "userName") SELECT "email", "firstName", "id", "lastName", "password", "userName" FROM "User";
+DROP TABLE "User";
+ALTER TABLE "new_User" RENAME TO "User";
+CREATE UNIQUE INDEX "User_userName_key" ON "User"("userName");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+PRAGMA foreign_key_check;
+PRAGMA foreign_keys=ON;
