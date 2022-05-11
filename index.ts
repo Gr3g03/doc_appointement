@@ -243,60 +243,6 @@ app.get("/doctors/:id", async (req, res) => {
 
 });
 
-app.get('/categories', async (req, res) => {
-
-  try {
-
-    const categories = await prisma.category.findMany({
-
-      include: {
-        appointements: true
-      }
-
-    });
-
-    res.send(categories)
-
-  }
-
-  catch (err) {
-    // @ts-ignore
-    res.status(400).send({ error: err.message });
-  }
-
-});
-
-app.get("/categories/:id", async (req, res) => {
-
-  const id = Number(req.params.id);
-
-  try {
-
-    const category = await prisma.category.findUnique({
-
-      where: { id },
-
-      //@ts-ignore
-      include: { appointements: true }
-
-    });
-
-    if (category) {
-      res.send(category);
-    }
-
-    else {
-      res.status(404).send({ error: "Category not found" });
-    }
-
-  }
-
-  catch (err) {
-    //@ts-ignore
-    res.status(400).send({ error: err.message });
-  }
-
-});
 
 app.get('/appointements', async (req, res) => {
 
@@ -307,8 +253,6 @@ app.get('/appointements', async (req, res) => {
       include: {
         normalUser: true,
         doctor: true,
-        category: true,
-        bids: true
       }
 
     });
@@ -337,8 +281,6 @@ app.get("/appointements/:id", async (req, res) => {
       include: {
         normalUser: true,
         doctor: true,
-        category: true,
-        bids: true
       }
 
     });
@@ -362,7 +304,7 @@ app.get("/appointements/:id", async (req, res) => {
 
 app.post('/appointement', async (req, res) => {
 
-  const { price, deadline, title, description, status, category_id } = req.body
+  const { price, endDate, startDate, title, description, status, category_id } = req.body
 
   const token = req.headers.authorization || ''
 
@@ -372,7 +314,7 @@ app.post('/appointement', async (req, res) => {
 
     if (user?.isDoctor) {
       const project = await prisma.appointement.create({
-        data: { price, deadline, title, description, status, doctor_id: user.id, category_id: category_id }
+        data: { endDate, startDate, title, description, status, doctor_id: user.id, }
       })
 
       res.send(project)
@@ -419,109 +361,6 @@ app.patch('/appointement/:id', async (req, res) => {
 
 })
 
-app.get('/bids', async (req, res) => {
 
-  try {
-
-    const bids = await prisma.bid.findMany({
-
-      include: {
-        normalUser: true,
-        appointement: true
-      }
-
-    });
-
-    res.send(bids)
-
-  }
-
-  catch (err) {
-    // @ts-ignore
-    res.status(400).send({ error: err.message });
-  }
-
-});
-
-app.get("/bids/:id", async (req, res) => {
-
-  const id = Number(req.params.id);
-
-  try {
-
-    const bid = await prisma.bid.findUnique({
-
-      where: { id },
-
-      include: {
-        normalUser: true,
-        appointement: true
-      }
-
-    });
-
-    if (bid) {
-      res.send(bid);
-    }
-
-    else {
-      res.status(404).send({ error: "Bid not found" });
-    }
-
-  }
-
-  catch (err) {
-    //@ts-ignore
-    res.status(400).send({ error: err.message });
-  }
-
-});
-
-app.delete('/bids/:id', async (req, res) => {
-
-  const id = Number(req.params.id)
-
-  try {
-    const bid = await prisma.bid.delete({ where: { id } })
-    res.send(bid)
-  }
-
-  catch (err) {
-    //@ts-ignore
-    res.status(400).send({ error: err.message })
-  }
-
-})
-
-app.post('/bids', async (req, res) => {
-
-  const { appointment_id, bids, user_id } = req.body
-
-  try {
-
-    const bid = await prisma.bid.create({
-      //@ts-ignore
-      data: { appointment_id, bids, user_id }
-    })
-
-    res.send(bid)
-
-  }
-
-  catch (err) {
-    //@ts-ignore
-    res.status(400).send({ error: err.message })
-  }
-
-})
-
-app.get('/bids/:project_id', async (req, res) => {
-
-  const appointment_id = Number(req.params.project_id)
-  const bid = await prisma.bid.findMany({ include: { normalUser: true }, where: { appointment_id } })
-
-  res.send(bid)
-
-})
 
 
