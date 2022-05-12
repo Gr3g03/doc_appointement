@@ -302,37 +302,22 @@ app.get("/appointements/:id", async (req, res) => {
 
 });
 
-app.post('/appointement', async (req, res) => {
 
-  const { price, endDate, startDate, title, description, status, category_id } = req.body
-
-  const token = req.headers.authorization || ''
-
+app.post("/appointements", async (req, res) => {
+  const { title, endDate, startDate, description, status, doctor_id, user_id } = req.body;
+  const token = req.headers.authorization;
   try {
-
-    const user: any = await getUserFromToken(token)
-
-    if (user?.isDoctor) {
-      const project = await prisma.appointement.create({
-        data: { endDate, startDate, title, description, status, doctor_id: user.id, }
-      })
-
-      res.send(project)
-
+    await prisma.appointement.create({
+      data: { title, endDate, startDate, description, status, doctor_id, user_id },
+    });
+    const user = await getUserFromToken(token as string);
+    if (user) {
+      res.send(user);
     }
-
-    else {
-      res.status(401).send("You're not authorized to create a project")
-    }
-
+  } catch (err: any) {
+    res.status(400).send({ error: err.message });
   }
-
-  catch (err) {
-    //@ts-ignore
-    res.status(400).send({ error: err.message })
-  }
-
-})
+});
 
 app.patch('/appointement/:id', async (req, res) => {
 
