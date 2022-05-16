@@ -304,11 +304,11 @@ app.get("/appointements/:id", async (req, res) => {
 
 
 app.post("/appointements", async (req, res) => {
-  const { title, endDate, startDate, description, status, doctor_id, user_id } = req.body;
+  const { title, end, start, description, status, doctor_id, user_id } = req.body;
   const token = req.headers.authorization;
   try {
     await prisma.appointement.create({
-      data: { title, endDate, startDate, description, status, doctor_id, user_id },
+      data: { title, end, start, description, status, doctor_id, user_id },
     });
     const user = await getUserFromToken(token as string);
     if (user) {
@@ -319,22 +319,22 @@ app.post("/appointements", async (req, res) => {
   }
 });
 
-app.patch('/appointement/:id', async (req, res) => {
+app.put('/appointement/:id', async (req, res) => {
 
-  const { user_id } = req.body
+  const { status } = req.body
 
   const id = Number(req.params.id)
 
   try {
 
-    let project = await prisma.appointement.update({ where: { id }, data: { user_id } })
+    let project = await prisma.appointement.update({ where: { id }, data: { status } })
 
     if (project) {
       res.send(project)
     }
 
     else {
-      res.status(404).send({ error: "Project not found" })
+      res.status(404).send({ error: " not found" })
     }
 
   }
@@ -347,5 +347,10 @@ app.patch('/appointement/:id', async (req, res) => {
 })
 
 
+app.delete('/event/:id', (req, res) => {
+  const id = req.params.id
+
+
+})
 
 

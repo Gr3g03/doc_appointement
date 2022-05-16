@@ -32,8 +32,8 @@ model User {
 model Appointement {
   id Int @id @default(autoincrement())
 
-  startDate   String
-  endDate     String
+  start       String
+  end         String
   title       String
   description String
   status      String
