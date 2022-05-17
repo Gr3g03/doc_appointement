@@ -347,10 +347,15 @@ app.put('/appointement/:id', async (req, res) => {
 })
 
 
-app.delete('/event/:id', (req, res) => {
-  const id = req.params.id
 
-
+app.delete('/deleteApp/:id', async (req, res) => {
+  const id = Number(req.params.id)
+  try {
+    const bid = await prisma.appointement.delete({ where: { id } })
+    res.send(bid)
+  }
+  catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.message })
+  }
 })
-
-
