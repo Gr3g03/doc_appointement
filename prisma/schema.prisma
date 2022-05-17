@@ -40,7 +40,10 @@ model Appointement {
 
   normalUser User? @relation("normalUser", fields: [user_id], references: [id])
   user_id    Int?
-  doctor     User  @relation("doctor", fields: [doctor_id], references: [id])
-  doctor_id  Int
+
+  doctor    User @relation("doctor", fields: [doctor_id], references: [id])
+  doctor_id Int
+
+
 
 }

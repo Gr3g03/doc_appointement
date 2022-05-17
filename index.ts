@@ -269,9 +269,7 @@ app.get('/appointements', async (req, res) => {
 });
 
 app.get("/appointements/:id", async (req, res) => {
-
   const id = Number(req.params.id);
-
   try {
 
     const appointement = await prisma.appointement.findUnique({
@@ -308,37 +306,38 @@ app.post("/appointements", async (req, res) => {
   const token = req.headers.authorization;
   try {
     await prisma.appointement.create({
-      data: { title, end, start, description, status, doctor_id, user_id },
+      data: { title, start, end, description, status, doctor_id, user_id },
     });
     const user = await getUserFromToken(token as string);
-    if (user) {
-      res.send(user);
+    const updatedDoctor = await prisma.user.findUnique({
+      where: { id: doctor_id },
+      include: { acceptedAppointemets: true },
+    });
+    if (user && updatedDoctor) {
+      res.send({ updatedUser: user, updatedDoctor });
     }
   } catch (err: any) {
     res.status(400).send({ error: err.message });
   }
 });
 
+
+
 app.put('/appointement/:id', async (req, res) => {
-
   const { status } = req.body
-
   const id = Number(req.params.id)
+  const token = req.headers.authorization;
 
   try {
-
     let project = await prisma.appointement.update({ where: { id }, data: { status } })
-
     if (project) {
       res.send(project)
     }
-
     else {
       res.status(404).send({ error: " not found" })
     }
 
   }
-
   catch (err) {
     //@ts-ignore
     res.status(400).send({ error: err.message })
@@ -348,14 +347,37 @@ app.put('/appointement/:id', async (req, res) => {
 
 
 
-app.delete('/deleteApp/:id', async (req, res) => {
-  const id = Number(req.params.id)
+app.delete("/deleteApp/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const token = req.headers.authorization;
+
   try {
-    const bid = await prisma.appointement.delete({ where: { id } })
-    res.send(bid)
-  }
-  catch (err) {
+    const event = await prisma.appointement.findUnique({
+      where: { id },
+    });
+
+    if (event && token) {
+      const event = await prisma.appointement.delete({
+        where: { id },
+      });
+      const updatedUser = await getUserFromToken(token as string);
+      const updatedDoctor = await prisma.user.findUnique({
+        where: { id: event.doctor_id },
+        include: { acceptedAppointemets: true },
+      });
+
+      res.send({
+        msg: "Event deleted succesfully",
+        updatedUser,
+        updatedDoctor,
+      });
+    } else {
+      throw Error(
+        "You are not authorized, or Event with this Id doesnt exist!"
+      );
+    }
+  } catch (err) {
     //@ts-ignore
-    res.status(400).send({ error: err.message })
+    res.status(400).send({ error: err.message });
   }
-})
+});
