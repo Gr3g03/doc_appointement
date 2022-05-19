@@ -346,6 +346,36 @@ app.put('/appointement/:id', async (req, res) => {
 })
 
 
+app.put("/editappointements/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const token = req.headers.authorization;
+  const { start, end, title, description } = req.body;
+
+  try {
+    const event = await prisma.appointement.findUnique({ where: { id } });
+
+    if (event && token) {
+      const updatedEvent = await prisma.appointement.update({
+        where: { id },
+        data: { start, end, title, description },
+        include: { doctor: true, normalUser: true },
+      });
+      const updatedUser = await getUserFromToken(token as string);
+
+      res.send({ updatedEvent, updatedUser });
+    } else {
+      throw Error(
+        "You are not authorized, or Event with this Id doesnt exist!"
+      );
+    }
+  } catch (err) {
+    //@ts-ignore
+    res.status(400).send({ error: err.message });
+  }
+});
+
+
+
 
 app.delete("/deleteApp/:id", async (req, res) => {
   const id = Number(req.params.id);
