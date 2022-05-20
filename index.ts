@@ -23,7 +23,6 @@ app.listen(4000, () => {
   console.log(`Server up: http://localhost:4000`);
 });
 
-
 function createToken(id: number) {
 
   //@ts-ignore
@@ -322,7 +321,6 @@ app.post("/appointements", async (req, res) => {
 });
 
 
-
 app.put('/appointement/:id', async (req, res) => {
   const { status } = req.body
   const id = Number(req.params.id)
@@ -373,8 +371,6 @@ app.put("/editappointements/:id", async (req, res) => {
     res.status(400).send({ error: err.message });
   }
 });
-
-
 
 
 app.delete("/deleteApp/:id", async (req, res) => {
