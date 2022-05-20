@@ -93,23 +93,23 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
 
   const { email, password } = req.body;
+  try {
+    const user = await prisma.user.findFirst({
+      where: { email: email },
+      include: { postedAppointements: { include: { normalUser: true } }, acceptedAppointemets: true }
+    });
 
-  const user = await prisma.user.findFirst({
-    where: { email: email },
-    include: { postedAppointements: { include: { normalUser: true } }, acceptedAppointemets: true }
-  });
+    // @ts-ignore
+    const passwordMatches = bcrypt.compareSync(password, user.password);
 
-  // @ts-ignore
-  const passwordMatches = bcrypt.compareSync(password, user.password);
+    if (user && passwordMatches) {
+      res.send({ user, token: createToken(user.id) });
+    }
+  } catch (error) {
 
-  if (user && passwordMatches) {
-    res.send({ user, token: createToken(user.id) });
-  }
-
-  else {
     res.status(404).send({ error: "user or password incorrect" });
-  }
 
+  }
 });
 
 app.get('/validate', async (req, res) => {
