@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
+import bodyParser from 'body-parser';
 
 const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error'],
@@ -11,6 +12,8 @@ const prisma = new PrismaClient({
 
 const app = express();
 app.use(cors());
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.json());
 
 app.use(express.static('public'));
@@ -22,6 +25,13 @@ app.get('/', async (req, res) => {
 app.listen(4000, () => {
   console.log(`Server up: http://localhost:4000`);
 });
+
+app.get('/status', (request, response) => response.json({ clients: clients.length }));
+
+const PORT = 3000;
+
+let clients = [];
+let facts = [];
 
 function createToken(id: number) {
 
@@ -327,21 +337,28 @@ app.put('/appointement/:id', async (req, res) => {
   const token = req.headers.authorization;
 
   try {
-    let project = await prisma.appointement.update({ where: { id }, data: { status } })
-    if (project) {
-      res.send(project)
-    }
-    else {
-      res.status(404).send({ error: " not found" })
-    }
+    const event = await prisma.appointement.findUnique({ where: { id } });
 
-  }
-  catch (err) {
+    if (event && token) {
+      const updatedDoctor = await prisma.appointement.update({
+        where: { id },
+        data: { status },
+        include: { doctor: true, normalUser: true },
+      });
+      const updatedUser = await getUserFromToken(token as string);
+
+      res.send({ updatedDoctor, updatedUser });
+    } else {
+      throw Error(
+        "You are not authorized, or Event with this Id doesnt exist!"
+      );
+    }
+  } catch (err) {
     //@ts-ignore
-    res.status(400).send({ error: err.message })
+    res.status(400).send({ error: err.message });
   }
+});
 
-})
 
 
 app.put("/editappointements/:id", async (req, res) => {
